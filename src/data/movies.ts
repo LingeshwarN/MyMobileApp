@@ -1,0 +1,223 @@
+export interface Movie {
+  id: string;
+  name: string;
+  poster: string;
+  rating: number;
+  genre: string[];
+  synopsis: string;
+  releaseDate: string;
+  language: string;
+  duration: string;
+  director: string;
+  cast: string[];
+  availability: 'Now Showing' | 'Coming Soon' | 'Advance Booking';
+  showtimes: string[];
+  price: number;
+}
+
+export const movies: Movie[] = [
+  {
+    id: '1',
+    name: 'Galactic Odyssey',
+    poster: 'https://picsum.photos/seed/movie1/300/450',
+    rating: 4.5,
+    genre: ['Sci-Fi', 'Action'],
+    synopsis:
+      'In the year 2450, humanity embarks on its greatest journey beyond the Milky Way. Captain Elara must navigate treacherous asteroid fields, alien diplomacy, and her own haunted past to save the last colony ship carrying one million souls to a new world.',
+    releaseDate: '2026-01-15',
+    language: 'English',
+    duration: '2h 28m',
+    director: 'James Mitchell',
+    cast: ['Sarah Connor', 'David Park', 'Mia Reynolds'],
+    availability: 'Now Showing',
+    showtimes: ['10:00 AM', '1:30 PM', '5:00 PM', '9:00 PM'],
+    price: 250,
+  },
+  {
+    id: '2',
+    name: 'The Last Samurai Rising',
+    poster: 'https://picsum.photos/seed/movie2/300/450',
+    rating: 4.8,
+    genre: ['Action', 'Drama'],
+    synopsis:
+      'Set in feudal Japan, a dishonored ronin seeks redemption by protecting a remote village from a ruthless warlord. Through honor, sacrifice, and the way of the sword, he discovers that true strength lies not in the blade but in the hearts of those worth fighting for.',
+    releaseDate: '2026-02-20',
+    language: 'Japanese',
+    duration: '2h 45m',
+    director: 'Takeshi Kurosawa',
+    cast: ['Ken Watanabe', 'Rinko Kikuchi', 'Hiroyuki Sanada'],
+    availability: 'Now Showing',
+    showtimes: ['11:00 AM', '2:30 PM', '6:00 PM', '9:30 PM'],
+    price: 300,
+  },
+  {
+    id: '3',
+    name: 'Love in Paris',
+    poster: 'https://picsum.photos/seed/movie3/300/450',
+    rating: 4.2,
+    genre: ['Romance', 'Comedy'],
+    synopsis:
+      'A clumsy American tourist accidentally switches suitcases with a Parisian artist at the airport. Their quest to retrieve their belongings leads them through the romantic streets of Paris, where laughter, mishaps, and unexpected love await at every corner.',
+    releaseDate: '2026-03-14',
+    language: 'English',
+    duration: '1h 52m',
+    director: 'Sophie Laurent',
+    cast: ['Emma Stone', 'Lucas Martin', 'Audrey Tautou'],
+    availability: 'Now Showing',
+    showtimes: ['10:30 AM', '1:00 PM', '4:30 PM', '7:30 PM'],
+    price: 200,
+  },
+  {
+    id: '4',
+    name: 'Shadow Protocol',
+    poster: 'https://picsum.photos/seed/movie4/300/450',
+    rating: 4.6,
+    genre: ['Thriller', 'Action'],
+    synopsis:
+      'When a covert intelligence agent discovers that their entire network has been compromised from within, they must go rogue to uncover a conspiracy that reaches the highest levels of government. Trust no one. Question everything.',
+    releaseDate: '2026-04-01',
+    language: 'English',
+    duration: '2h 15m',
+    director: 'Christopher Blake',
+    cast: ['Tom Hardy', 'Charlize Theron', 'Oscar Isaac'],
+    availability: 'Coming Soon',
+    showtimes: ['12:00 PM', '3:30 PM', '7:00 PM', '10:00 PM'],
+    price: 280,
+  },
+  {
+    id: '5',
+    name: 'The Enchanted Forest',
+    poster: 'https://picsum.photos/seed/movie5/300/450',
+    rating: 4.3,
+    genre: ['Animation', 'Fantasy'],
+    synopsis:
+      'A young girl discovers a hidden portal in her grandmother\'s garden that leads to an enchanted forest where animals can talk, trees can walk, and an ancient evil threatens to plunge the magical realm into eternal darkness.',
+    releaseDate: '2026-05-10',
+    language: 'English',
+    duration: '1h 40m',
+    director: 'Pixie Animations',
+    cast: ['Voice: Anna Kendrick', 'Voice: Idris Elba', 'Voice: Zendaya'],
+    availability: 'Now Showing',
+    showtimes: ['9:00 AM', '11:30 AM', '2:00 PM', '4:30 PM'],
+    price: 180,
+  },
+  {
+    id: '6',
+    name: 'Midnight Terror',
+    poster: 'https://picsum.photos/seed/movie6/300/450',
+    rating: 3.9,
+    genre: ['Horror', 'Thriller'],
+    synopsis:
+      'A group of college students rent a remote cabin for a weekend getaway, only to discover that the previous occupants never actually left. As midnight approaches, the line between the living and the dead begins to blur.',
+    releaseDate: '2026-06-13',
+    language: 'English',
+    duration: '1h 48m',
+    director: 'Jordan Peele',
+    cast: ['Lupita Nyongo', 'Daniel Kaluuya', 'Florence Pugh'],
+    availability: 'Now Showing',
+    showtimes: ['7:00 PM', '9:30 PM', '11:45 PM'],
+    price: 220,
+  },
+  {
+    id: '7',
+    name: 'Champions League',
+    poster: 'https://picsum.photos/seed/movie7/300/450',
+    rating: 4.1,
+    genre: ['Drama', 'Sports'],
+    synopsis:
+      'Based on the true story of an underdog cricket team from a small Indian village that defied all odds to win the national championship. A tale of grit, teamwork, and the unbreakable spirit of those who dare to dream.',
+    releaseDate: '2026-07-04',
+    language: 'Hindi',
+    duration: '2h 35m',
+    director: 'Rajkumar Hirani',
+    cast: ['Ranveer Singh', 'Deepika Padukone', 'Amitabh Bachchan'],
+    availability: 'Advance Booking',
+    showtimes: ['10:00 AM', '1:30 PM', '5:00 PM', '8:30 PM'],
+    price: 350,
+  },
+  {
+    id: '8',
+    name: 'Ocean\'s Depths',
+    poster: 'https://picsum.photos/seed/movie8/300/450',
+    rating: 4.4,
+    genre: ['Sci-Fi', 'Adventure'],
+    synopsis:
+      'A team of deep-sea explorers discovers an ancient underwater civilization at the bottom of the Mariana Trench. But awakening the sleeping city triggers a chain of events that threatens all life on the surface.',
+    releaseDate: '2026-08-22',
+    language: 'English',
+    duration: '2h 20m',
+    director: 'James Cameron',
+    cast: ['Chris Hemsworth', 'Gal Gadot', 'John Boyega'],
+    availability: 'Coming Soon',
+    showtimes: ['11:00 AM', '2:00 PM', '5:30 PM', '9:00 PM'],
+    price: 320,
+  },
+  {
+    id: '9',
+    name: 'The Comedy Club',
+    poster: 'https://picsum.photos/seed/movie9/300/450',
+    rating: 4.0,
+    genre: ['Comedy'],
+    synopsis:
+      'Three best friends with wildly different personalities decide to open a comedy club in downtown Mumbai. Between terrible acts, funding disasters, and romantic entanglements, they discover that the best jokes are the ones life plays on you.',
+    releaseDate: '2026-09-05',
+    language: 'Hindi',
+    duration: '2h 05m',
+    director: 'Anurag Basu',
+    cast: ['Ayushmann Khurrana', 'Rajkummar Rao', 'Kriti Sanon'],
+    availability: 'Now Showing',
+    showtimes: ['10:30 AM', '1:30 PM', '4:30 PM', '7:30 PM'],
+    price: 200,
+  },
+  {
+    id: '10',
+    name: 'Neon Nights',
+    poster: 'https://picsum.photos/seed/movie10/300/450',
+    rating: 4.7,
+    genre: ['Action', 'Sci-Fi'],
+    synopsis:
+      'In a cyberpunk Tokyo of 2077, a street racer with cybernetic enhancements gets entangled with the resistance movement fighting against a mega-corporation that controls the city through neural implants. Fast cars, neon lights, and a fight for freedom.',
+    releaseDate: '2026-10-15',
+    language: 'English',
+    duration: '2h 10m',
+    director: 'Denis Villeneuve',
+    cast: ['Keanu Reeves', 'Ana de Armas', 'Dev Patel'],
+    availability: 'Advance Booking',
+    showtimes: ['12:00 PM', '3:00 PM', '6:30 PM', '10:00 PM'],
+    price: 380,
+  },
+  {
+    id: '11',
+    name: 'Whispers in the Wind',
+    poster: 'https://picsum.photos/seed/movie11/300/450',
+    rating: 4.6,
+    genre: ['Drama', 'Romance'],
+    synopsis:
+      'Two strangers connected by letters found in an old bookshop begin an anonymous correspondence that changes both their lives. Set across seasons in a quaint English village, this is a story about the power of words and the courage to love.',
+    releaseDate: '2026-11-20',
+    language: 'English',
+    duration: '2h 00m',
+    director: 'Greta Gerwig',
+    cast: ['Saoirse Ronan', 'Timothée Chalamet', 'Judi Dench'],
+    availability: 'Coming Soon',
+    showtimes: ['10:00 AM', '12:30 PM', '3:00 PM', '6:00 PM'],
+    price: 230,
+  },
+  {
+    id: '12',
+    name: 'Dragon Kingdom',
+    poster: 'https://picsum.photos/seed/movie12/300/450',
+    rating: 4.5,
+    genre: ['Fantasy', 'Animation'],
+    synopsis:
+      'In a world where humans and dragons once lived in harmony, a young dragon rider must reunite the five elemental dragons to prevent an ancient prophecy of destruction. An epic animated adventure with stunning visuals and a heartwarming story.',
+    releaseDate: '2026-12-25',
+    language: 'English',
+    duration: '1h 55m',
+    director: 'DreamWorks Animation',
+    cast: ['Voice: Jack Black', 'Voice: Awkwafina', 'Voice: Benedict Cumberbatch'],
+    availability: 'Advance Booking',
+    showtimes: ['9:00 AM', '11:30 AM', '2:00 PM', '5:00 PM'],
+    price: 200,
+  },
+];
