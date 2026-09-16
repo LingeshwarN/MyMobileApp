@@ -1,0 +1,6 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.import.excludes": [
+        "**/node_modules/**"
+    ]
+}

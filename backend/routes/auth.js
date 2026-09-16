@@ -19,9 +19,9 @@ router.post('/register', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     user = new User({
-      fullName,
+      name: fullName,
       email,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
       mobile,
       gender,
       dob,
@@ -42,7 +42,7 @@ router.post('/register', async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.fullName,
+        name: user.name,
         email: user.email,
         phone: user.mobile,
         address: user.address,
@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({message: 'Invalid credentials'});
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return res.status(400).json({message: 'Invalid credentials'});
     }
@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
       token,
       user: {
         id: user._id,
-        name: user.fullName,
+        name: user.name,
         email: user.email,
         phone: user.mobile,
         address: user.address,

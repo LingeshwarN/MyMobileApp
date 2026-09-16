@@ -26,6 +26,11 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/promotions', require('./routes/promotions'));
 
+// Health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
 // Root endpoint (Exp 9)
 app.get('/', (req, res) => {
   res.json({
@@ -54,7 +59,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({error: 'Internal Server Error', details: err.message});
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 CineBooks Node.js Server listening on port ${PORT}`);
-});
+// Start Server (guarded so supertest can import `app` without binding a port)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 CineBooks Node.js Server listening on port ${PORT}`);
+  });
+}
+
+module.exports = app;

@@ -27,10 +27,11 @@ router.post('/', async (req, res) => {
 router.put('/:id/cancel', async (req, res) => {
   try {
     const booking = await Booking.findOneAndUpdate(
-      {bookingId: req.params.id},
+      {_id: req.params.id, status: 'confirmed'},
       {status: 'cancelled'},
       {new: true},
     );
+    if (!booking) return res.status(404).json({error: 'Booking not found'});
     res.json(booking);
   } catch (err) {
     res.status(400).json({error: err.message});
