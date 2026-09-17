@@ -12,7 +12,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {DrawerActions} from '@react-navigation/native';
 import {Colors, Typography, Spacing, BorderRadius, Shadow} from '../theme';
 import {movies, Movie} from '../data/movies';
-import {genres} from '../data/genres';
+import {genres, Genre} from '../data/genres';
+import {fetchMovies, fetchGenres} from '../services/api';
+import {useCachedFetch} from '../hooks/useCachedFetch';
 import SearchBar from '../components/SearchBar';
 import GenreCard from '../components/GenreCard';
 import StarRating from '../components/StarRating';
@@ -20,10 +22,17 @@ import StarRating from '../components/StarRating';
 const MovieExplorerScreen = ({navigation}: any) => {
   const [searchText, setSearchText] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>(movies);
+
+  // Phase B: real catalog with local fallback
+  const {data: liveMovies} = useCachedFetch<Movie[]>(fetchMovies);
+  const {data: liveGenres} = useCachedFetch<Genre[]>(fetchGenres);
+  const allMovies = liveMovies ?? movies;
+  const allGenres = liveGenres ?? genres;
+
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>(allMovies);
 
   useEffect(() => {
-    let result = movies;
+    let result = allMovies;
     if (searchText.trim()) {
       const query = searchText.toLowerCase();
       result = result.filter(
@@ -38,7 +47,7 @@ const MovieExplorerScreen = ({navigation}: any) => {
       );
     }
     setFilteredMovies(result);
-  }, [searchText, selectedGenre]);
+  }, [searchText, selectedGenre, allMovies]);
 
   const renderMovieItem = ({item}: {item: Movie}) => (
     <TouchableOpacity
@@ -98,7 +107,7 @@ const MovieExplorerScreen = ({navigation}: any) => {
       {/* Genre Filter */}
       <FlatList
         horizontal
-        data={genres}
+        data={allGenres}
         keyExtractor={item => item.id}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.genreList}

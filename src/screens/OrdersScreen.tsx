@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,62 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {DrawerActions} from '@react-navigation/native';
+import {DrawerActions, useFocusEffect} from '@react-navigation/native';
 import {Colors, Typography, Spacing, BorderRadius, Shadow} from '../theme';
 import {useSelector, useDispatch} from 'react-redux';
 import {RootState} from '../store/store';
-import {cancelBooking} from '../store/slices/bookingSlice';
+import {cancelBooking, setBookings} from '../store/slices/bookingSlice';
 import Button from '../components/Button';
+import {BookingItem} from '../context/BookingContext';
+import {fetchBookings, cancelBookingApi, ApiBooking, normalizeMovie, formatShowtime} from '../services/api';
+
+function apiBookingToItem(b: ApiBooking): BookingItem {
+  const movie = normalizeMovie(b.movie || {name: 'Movie'});
+  const seats = (b.seats || []).map(s => s.label);
+  const total = b.totalPrice || 0;
+  return {
+    id: b._id,
+    movie,
+    showtime: b.showtime ? formatShowtime(b.showtime.startTime) : 'Showtime',
+    seats,
+    quantity: seats.length,
+    subtotal: Math.max(total - 30, 0),
+    convenienceFee: total > 30 ? 30 : 0,
+    total,
+    paymentMode: b.paymentMode || 'UPI',
+    status: b.status,
+    bookedAt: b.createdAt,
+  };
+}
 
 const OrdersScreen = ({navigation}: any) => {
   const dispatch = useDispatch();
   const bookings = useSelector((state: RootState) => state.booking.bookings);
+
+  const [syncing, setSyncing] = React.useState(false);
+
+  // Phase D: DB ⇄ Redux reconciliation on every focus
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      setSyncing(true);
+      fetchBookings()
+        .then(list => {
+          if (!active) return;
+          const items = list.map(apiBookingToItem);
+          dispatch(setBookings(items));
+        })
+        .catch(() => {
+          // offline / not logged in: keep local bookings untouched
+        })
+        .finally(() => {
+          if (active) setSyncing(false);
+        });
+      return () => {
+        active = false;
+      };
+    }, [dispatch]),
+  );
 
   const handleCancel = (bookingId: string) => {
     Alert.alert('Cancel Booking', 'Are you sure you want to cancel this booking?', [
@@ -26,7 +72,12 @@ const OrdersScreen = ({navigation}: any) => {
       {
         text: 'Yes, Cancel',
         style: 'destructive',
-        onPress: () => {
+        onPress: async () => {
+          try {
+            await cancelBookingApi(bookingId);
+          } catch (e) {
+            // best effort — keep local state in sync anyway
+          }
           dispatch(cancelBooking(bookingId));
           Alert.alert('Cancelled', 'Your booking has been cancelled.');
         },
@@ -105,7 +156,9 @@ const OrdersScreen = ({navigation}: any) => {
         </TouchableOpacity>
         <View style={{flex: 1}}>
           <Text style={styles.title}>📋 My Orders</Text>
-          <Text style={styles.subtitle}>{bookings.length} booking(s)</Text>
+          <Text style={styles.subtitle}>
+            {syncing ? 'Syncing with server…' : `${bookings.length} booking(s)`}
+          </Text>
         </View>
       </View>
 

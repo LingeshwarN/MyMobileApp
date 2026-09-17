@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {Colors, Typography, Spacing, BorderRadius, Shadow} from '../theme';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
+import {UserContext} from '../context/UserContext';
 
 const RegisterScreen = ({navigation}: any) => {
+  const {register} = useContext(UserContext);
   const [form, setForm] = useState({
     fullName: '',
     mobile: '',
@@ -91,17 +93,30 @@ const RegisterScreen = ({navigation}: any) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      // Phase E: real account creation + JWT via ../services/api
+      await register({
+        fullName: form.fullName,
+        email: form.email,
+        password: form.password,
+        mobile: form.mobile,
+        gender: form.gender,
+        dob: form.dob,
+        city: form.city,
+        address: form.address,
+      });
       Alert.alert(
         'Registration Successful!',
-        'Your CineBooks account has been created. Please login.',
-        [{text: 'Login Now', onPress: () => navigation.navigate('Login')}],
+        'Your CineBooks account has been created and you are now signed in.',
       );
-    }, 1500);
+    } catch (err: any) {
+      setErrors({email: err?.message || 'Registration failed. Please try again.'});
+    } finally {
+      setLoading(false);
+    }
   };
 
   const genders = ['Male', 'Female', 'Other'];

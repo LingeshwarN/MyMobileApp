@@ -1,7 +1,8 @@
 import React, {useRef, useEffect, useState} from 'react';
 import {View, Text, StyleSheet, ScrollView, Dimensions} from 'react-native';
 import {Colors, BorderRadius, Spacing, Typography} from '../theme';
-import {Promotion, promotions} from '../data/promotions';
+import {promotions as fallbackPromotions, Promotion} from '../data/promotions';
+import {fetchPromotions} from '../services/api';
 
 const {width} = Dimensions.get('window');
 const BANNER_WIDTH = width - Spacing.base * 2;
@@ -9,15 +10,28 @@ const BANNER_WIDTH = width - Spacing.base * 2;
 const PromoBanner: React.FC = () => {
   const scrollRef = useRef<any>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [promotions, setPromotions] = useState<Promotion[]>(fallbackPromotions);
+
+  // Phase B: pull live promos from the backend, keep local carousel as fallback
+  useEffect(() => {
+    let active = true;
+    fetchPromotions().then(data => {
+      if (active && data.length > 0) setPromotions(data);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
+    if (promotions.length === 0) return;
     const timer = setInterval(() => {
       const nextIndex = (activeIndex + 1) % promotions.length;
       scrollRef.current?.scrollTo({x: nextIndex * BANNER_WIDTH, animated: true});
       setActiveIndex(nextIndex);
     }, 3500);
     return () => clearInterval(timer);
-  }, [activeIndex]);
+  }, [activeIndex, promotions.length]);
 
   const handleScroll = (event: any) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / BANNER_WIDTH);

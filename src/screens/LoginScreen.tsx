@@ -11,7 +11,6 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors, Typography, Spacing, BorderRadius, Shadow} from '../theme';
 import InputField from '../components/InputField';
 import Button from '../components/Button';
@@ -44,30 +43,15 @@ const LoginScreen = ({navigation}: any) => {
   const handleLogin = async () => {
     if (!validate()) return;
     setLoading(true);
-    // Simulated JWT login
-    setTimeout(async () => {
-      const simulatedToken = 'jwt_' + Date.now() + '_' + Math.random().toString(36).substr(2);
-      await AsyncStorage.setItem('userToken', simulatedToken);
-      await AsyncStorage.setItem(
-        'userProfile',
-        JSON.stringify({
-          name: 'Lingesh',
-          email: email,
-          phone: '9876543210',
-          address: '123 Cinema Street, Chennai',
-          avatar: 'https://picsum.photos/seed/lingesh/200/200',
-        }),
-      );
-      login({
-        name: 'Lingesh',
-        email: email,
-        phone: '9876543210',
-        address: '123 Cinema Street, Chennai',
-        avatar: 'https://picsum.photos/seed/lingesh/200/200',
-      }, simulatedToken);
-      setLoading(false);
+    try {
+      // Phase E: real JWT authentication against the Express backend
+      await login(email.trim(), password);
       Alert.alert('Success', 'Welcome back to CineBooks!');
-    }, 1500);
+    } catch (err: any) {
+      setErrors({password: err?.message || 'Invalid email or password'});
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

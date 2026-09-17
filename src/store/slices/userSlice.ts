@@ -9,14 +9,15 @@ interface UserState {
 
 const initialState: UserState = {
   profile: {
+    id: '',
     name: 'Lingesh',
     email: 'lingesh@cinebooks.com',
     phone: '9876543210',
     address: '123 Cinema Street, Chennai',
     avatar: 'https://picsum.photos/seed/lingesh/200/200',
   },
-  token: 'simulated_jwt_token',
-  isAuthenticated: true,
+  token: null,
+  isAuthenticated: false,
 };
 
 export const userSlice = createSlice({

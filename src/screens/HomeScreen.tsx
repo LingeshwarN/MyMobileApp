@@ -13,7 +13,9 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {DrawerActions} from '@react-navigation/native';
 import {Colors, Typography, Spacing, Shadow, BorderRadius} from '../theme';
 import {movies, Movie} from '../data/movies';
-import {genres} from '../data/genres';
+import {genres, Genre} from '../data/genres';
+import {fetchMovies, fetchGenres} from '../services/api';
+import {useCachedFetch} from '../hooks/useCachedFetch';
 import SearchBar from '../components/SearchBar';
 import MovieCard from '../components/MovieCard';
 import GenreCard from '../components/GenreCard';
@@ -29,11 +31,18 @@ const HomeScreen = ({navigation}: any) => {
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const [searchText, setSearchText] = useState('');
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
-  const [filteredMovies, setFilteredMovies] = useState<Movie[]>(movies);
+
+  // Phase B: real catalog from the Express backend with local data as fallback
+  const {data: liveMovies} = useCachedFetch<Movie[]>(fetchMovies);
+  const {data: liveGenres} = useCachedFetch<Genre[]>(fetchGenres);
+  const allMovies = liveMovies ?? movies;
+  const allGenres = liveGenres ?? genres;
+
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>(allMovies);
 
   // Live search + genre filter (Exp 4)
   useEffect(() => {
-    let result = movies;
+    let result = allMovies;
     if (searchText.trim()) {
       const query = searchText.toLowerCase();
       result = result.filter(
@@ -49,7 +58,7 @@ const HomeScreen = ({navigation}: any) => {
       );
     }
     setFilteredMovies(result);
-  }, [searchText, selectedGenre]);
+  }, [searchText, selectedGenre, allMovies]);
 
   const isWishlisted = (movieId: string) =>
     wishlistItems.some(m => m.id === movieId);
@@ -114,7 +123,7 @@ const HomeScreen = ({navigation}: any) => {
           </View>
           <FlatList
             horizontal
-            data={genres}
+            data={allGenres}
             keyExtractor={item => item.id}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.genreList}

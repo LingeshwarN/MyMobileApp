@@ -1,3 +1,4 @@
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -7,7 +8,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB (Exp 11)
-connectDB();
+if (process.env.NODE_ENV !== 'test') {
+  connectDB();
+}
 
 // Middleware (Exp 10)
 app.use(cors());
@@ -19,12 +22,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes (Exp 9, 10, 11, 12)
+// Routes (Exp 9, 10, 11, 12 + full stack)
 app.use('/api/movies', require('./routes/movies'));
 app.use('/api/genres', require('./routes/genres'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/promotions', require('./routes/promotions'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/theaters', require('./routes/theaters'));
+app.use('/api/showtimes', require('./routes/showtimes'));
+app.use('/api/swaps', require('./routes/swaps'));
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -44,24 +51,38 @@ app.get('/', (req, res) => {
       '/api/auth/login',
       '/api/bookings',
       '/api/promotions',
+      '/api/users/:id',
+      '/api/theaters',
+      '/api/showtimes',
+      '/api/swaps/*',
+      '/api/health',
     ],
   });
 });
 
 // Global 404 handler
 app.use((req, res) => {
-  res.status(404).json({error: 'Route not found'});
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // Global Error Handler (Exp 9 & 10)
 app.use((err, req, res, next) => {
   console.error('Server Error:', err);
-  res.status(500).json({error: 'Internal Server Error', details: err.message});
+  res.status(500).json({ error: 'Internal Server Error', details: err.message });
 });
 
-// Start Server (guarded so supertest can import `app` without binding a port)
+// Socket.io seat-swap namespace shared with the Express app
+app.set('io', null);
+
 if (require.main === module) {
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+
+  if (process.env.NODE_ENV !== 'test') {
+    const initSeatSwap = require('./sockets/seatSwap');
+    app.set('io', initSeatSwap(server));
+  }
+
+  server.listen(PORT, () => {
     console.log(`🚀 CineBooks Node.js Server listening on port ${PORT}`);
   });
 }
