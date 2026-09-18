@@ -30,13 +30,68 @@ import {useCachedFetch} from '../hooks/useCachedFetch';
 import {useSocket} from '../hooks/useSocket';
 import SwapProposalModal from '../components/SwapProposalModal';
 
-const STATIC_SEATS = [
-  ['A1','A2','A3','A4','','A5','A6','A7','A8'],
-  ['B1','B2','B3','B4','','B5','B6','B7','B8'],
-  ['C1','C2','C3','C4','','C5','C6','C7','C8'],
-  ['D1','D2','D3','D4','','D5','D6','D7','D8'],
-  ['E1','E2','E3','E4','','E5','E6','E7','E8'],
-];
+// 10-row × 12-col static theater layout (col 5 & 6 are aisle gaps)
+const STATIC_ROWS = 10;
+const STATIC_COLS = 12;
+const ROW_LETTERS = 'ABCDEFGHIJ';
+
+// Client-side seat tagging — mirrors backend/utils/seatTagging.js
+type RawSeat = {row: number; col: number; label: string; type: string; tags: string[]};
+
+function tagBestViewClient(seats: RawSeat[], rows: number, cols: number) {
+  const rowStart = Math.floor(rows * 0.4);
+  const rowEnd = Math.ceil(rows * 0.7);
+  const colStart = Math.floor(cols * 0.25);
+  const colEnd = Math.ceil(cols * 0.75);
+  seats.forEach(s => {
+    if (s.type !== 'aisle' && s.row >= rowStart && s.row < rowEnd && s.col >= colStart && s.col < colEnd) {
+      if (!s.tags.includes('best-view')) s.tags.push('best-view');
+    }
+  });
+}
+
+function tagFamilyClient(seats: RawSeat[], rows: number, cols: number) {
+  const bandRows = Math.min(2, rows);
+  const bandCols = Math.min(5, cols);
+  const regions = [
+    {rS: 0, rE: bandRows, cS: 0, cE: bandCols},
+    {rS: 0, rE: bandRows, cS: cols - bandCols, cE: cols},
+    {rS: rows - bandRows, rE: rows, cS: 0, cE: bandCols},
+    {rS: rows - bandRows, rE: rows, cS: cols - bandCols, cE: cols},
+  ];
+  regions.forEach(({rS, rE, cS, cE}) => {
+    for (let r = rS; r < rE; r++) {
+      const rowSeats = seats.filter(s => s.row === r && s.col >= cS && s.col < cE && s.type === 'standard' && s.tags.length === 0);
+      rowSeats.sort((a, b) => a.col - b.col);
+      let run: RawSeat[] = [];
+      rowSeats.forEach((s, i) => {
+        if (i === 0 || s.col === rowSeats[i - 1].col + 1) { run.push(s); }
+        else {
+          if (run.length >= 3) run.slice(0, 4).forEach(rs => rs.tags.push('family'));
+          run = [s];
+        }
+      });
+      if (run.length >= 3) run.slice(0, 4).forEach(rs => rs.tags.push('family'));
+    }
+  });
+}
+
+function buildTaggedStaticSeats(): RawSeat[] {
+  const seats: RawSeat[] = [];
+  for (let r = 0; r < STATIC_ROWS; r++) {
+    for (let c = 0; c < STATIC_COLS; c++) {
+      const isAisle = c === 5 || c === 6;
+      // Last 2 rows are premium
+      const type = isAisle ? 'aisle' : r >= STATIC_ROWS - 2 ? 'premium' : 'standard';
+      seats.push({row: r, col: c, label: `${ROW_LETTERS[r]}${c + 1}`, type, tags: []});
+    }
+  }
+  tagBestViewClient(seats, STATIC_ROWS, STATIC_COLS);
+  tagFamilyClient(seats, STATIC_ROWS, STATIC_COLS);
+  return seats;
+}
+
+const TAGGED_STATIC_SEATS = buildTaggedStaticSeats();
 
 const BookingsScreen = ({route, navigation}: any) => {
   const movie: Movie | undefined = route.params?.movie;
@@ -377,7 +432,7 @@ const BookingsScreen = ({route, navigation}: any) => {
             </View>
           ))}
 
-          {/* Legend */}
+          {/* Legend — always shown */}
           <View style={styles.legendGrid}>
             <View style={styles.legendItem}>
               <View style={[styles.legendDot, {backgroundColor: Colors.backgroundInput, borderColor: Colors.border}]} />
@@ -391,21 +446,23 @@ const BookingsScreen = ({route, navigation}: any) => {
               <View style={[styles.legendDot, {backgroundColor: '#3A1E1E', borderColor: '#3A1E1E'}]} />
               <Text style={styles.legendText}>Booked</Text>
             </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, {backgroundColor: '#2E2410', borderColor: '#FFB800'}]} />
+              <Text style={styles.legendText}>⭐ Best View</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, {backgroundColor: '#1A2A2A', borderColor: '#448AFF'}]} />
+              <Text style={styles.legendText}>👨‍👩‍👧 Family</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, {backgroundColor: '#2A1A3E', borderColor: Colors.accent}]} />
+              <Text style={styles.legendText}>💎 Premium</Text>
+            </View>
             {useRealSeats && (
-              <>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#FF9800', borderColor: '#FF9800'}]} />
-                  <Text style={styles.legendText}>Swappable</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#2E2410', borderColor: '#FFB800'}]} />
-                  <Text style={styles.legendText}>Best View</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendDot, {backgroundColor: '#1A2A2A', borderColor: '#448AFF'}]} />
-                  <Text style={styles.legendText}>Family</Text>
-                </View>
-              </>
+              <View style={styles.legendItem}>
+                <View style={[styles.legendDot, {backgroundColor: '#FF9800', borderColor: '#FF9800'}]} />
+                <Text style={styles.legendText}>⇄ Swappable</Text>
+              </View>
             )}
           </View>
           {errors.seats && <Text style={styles.errorText}>{errors.seats}</Text>}
@@ -513,13 +570,22 @@ function buildRealGrid(showtime: Showtime, currentUserId: string | null): SeatCe
 }
 
 function buildStaticGrid(): SeatCell[][] {
-  return STATIC_SEATS.map(row =>
-    row.map(label =>
-      label === ''
-        ? {empty: true, label: '', type: 'aisle', tags: [], status: 'available', swappable: false, isOwn: false}
-        : {label, type: 'standard', tags: [], status: 'available', swappable: false, isOwn: false},
-    ),
-  );
+  // Build from pre-tagged seats so best-view/family/premium colors show offline
+  const rows: SeatCell[][] = [];
+  for (let r = 0; r < STATIC_ROWS; r++) {
+    const cells: SeatCell[] = [];
+    for (let c = 0; c < STATIC_COLS; c++) {
+      const seat = TAGGED_STATIC_SEATS.find(s => s.row === r && s.col === c);
+      if (!seat) continue;
+      if (seat.type === 'aisle') {
+        cells.push({empty: true, label: '', type: 'aisle', tags: [], status: 'available', swappable: false, isOwn: false});
+      } else {
+        cells.push({label: seat.label, type: seat.type, tags: seat.tags, status: 'available', swappable: false, isOwn: false});
+      }
+    }
+    rows.push(cells);
+  }
+  return rows;
 }
 
 const styles = StyleSheet.create({
