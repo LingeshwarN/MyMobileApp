@@ -98,6 +98,7 @@ const RegisterScreen = ({navigation}: any) => {
     setLoading(true);
     try {
       // Phase E: real account creation + JWT via ../services/api
+      // On success, UserContext sets user state -> AppNavigator auto-switches to main app
       await register({
         fullName: form.fullName,
         email: form.email,
@@ -108,12 +109,11 @@ const RegisterScreen = ({navigation}: any) => {
         city: form.city,
         address: form.address,
       });
-      Alert.alert(
-        'Registration Successful!',
-        'Your CineBooks account has been created and you are now signed in.',
-      );
+      // No Alert here — AppNavigator reacts to user state change and navigates automatically
     } catch (err: any) {
-      setErrors({email: err?.message || 'Registration failed. Please try again.'});
+      const message = err?.message || 'Registration failed. Please try again.';
+      Alert.alert('Registration Failed', message);
+      setErrors({general: message});
     } finally {
       setLoading(false);
     }
@@ -238,6 +238,11 @@ const RegisterScreen = ({navigation}: any) => {
           />
 
           {/* Terms */}
+          {errors.general ? (
+            <Text style={[styles.errorText, {marginBottom: Spacing.md, textAlign: 'center'}]}>
+              {errors.general}
+            </Text>
+          ) : null}
           <View style={styles.termsRow}>
             <Switch
               value={acceptTerms}
