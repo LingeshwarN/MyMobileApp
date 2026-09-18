@@ -2,6 +2,60 @@ import React, {createContext, useState, useEffect, ReactNode} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {apiLogin, apiRegister} from '../services/api';
 
+// ---------------------------------------------------------------------------
+// Demo accounts — work offline, no backend / MongoDB needed
+// ---------------------------------------------------------------------------
+const DEMO_ACCOUNTS: Array<{email: string; password: string; profile: UserProfile}> = [
+  {
+    email: 'demo@cinebooks.com',
+    password: 'Demo@1234',
+    profile: {
+      id: 'demo-1',
+      name: 'Demo User',
+      email: 'demo@cinebooks.com',
+      phone: '9876543210',
+      address: '123 Demo Street, Mumbai',
+      avatar: 'https://picsum.photos/seed/demo1/200/200',
+      city: 'Mumbai',
+      gender: 'Male',
+    },
+  },
+  {
+    email: 'lingesh@cinebooks.com',
+    password: 'Test@1234',
+    profile: {
+      id: 'demo-2',
+      name: 'Lingesh',
+      email: 'lingesh@cinebooks.com',
+      phone: '9123456789',
+      address: '456 Main Road, Chennai',
+      avatar: 'https://picsum.photos/seed/demo2/200/200',
+      city: 'Chennai',
+      gender: 'Male',
+    },
+  },
+  {
+    email: 'admin@cinebooks.com',
+    password: 'Admin@1234',
+    profile: {
+      id: 'demo-3',
+      name: 'Admin',
+      email: 'admin@cinebooks.com',
+      phone: '9000000000',
+      address: '1 Admin Lane, Bangalore',
+      avatar: 'https://picsum.photos/seed/demo3/200/200',
+      city: 'Bangalore',
+      gender: 'Other',
+    },
+  },
+];
+
+function findDemoAccount(email: string, password: string) {
+  return DEMO_ACCOUNTS.find(
+    a => a.email.toLowerCase() === email.toLowerCase() && a.password === password,
+  );
+}
+
 export interface UserProfile {
   id: string;
   name: string;
@@ -75,6 +129,15 @@ export const UserProvider = ({children}: {children: ReactNode}) => {
   }, []);
 
   const login = async (email: string, password: string): Promise<UserProfile> => {
+    // Check demo accounts first (works offline, no backend needed)
+    const demo = findDemoAccount(email, password);
+    if (demo) {
+      setUser(demo.profile);
+      setToken('demo-token');
+      await AsyncStorage.setItem('userToken', 'demo-token');
+      await AsyncStorage.setItem('userProfile', JSON.stringify(demo.profile));
+      return demo.profile;
+    }
     const res: {token: string; user: any} = await apiLogin(email, password);
     const profile = mapApiUser(res.user);
     setUser(profile);
@@ -85,6 +148,17 @@ export const UserProvider = ({children}: {children: ReactNode}) => {
   };
 
   const register = async (form: Record<string, string>): Promise<UserProfile> => {
+    // Check if registering with a demo email — just sign in directly
+    const demo = DEMO_ACCOUNTS.find(
+      a => a.email.toLowerCase() === (form.email || '').toLowerCase(),
+    );
+    if (demo) {
+      setUser(demo.profile);
+      setToken('demo-token');
+      await AsyncStorage.setItem('userToken', 'demo-token');
+      await AsyncStorage.setItem('userProfile', JSON.stringify(demo.profile));
+      return demo.profile;
+    }
     const res: {token: string; user: any} = await apiRegister(form);
     const profile = mapApiUser(res.user);
     setUser(profile);

@@ -45,10 +45,22 @@ const LoginScreen = ({navigation}: any) => {
     setLoading(true);
     try {
       // Phase E: real JWT authentication against the Express backend
+      // Demo accounts are intercepted in UserContext before hitting the API
       await login(email.trim(), password);
-      Alert.alert('Success', 'Welcome back to CineBooks!');
+      // No Alert — AppNavigator switches to main app automatically
     } catch (err: any) {
       setErrors({password: err?.message || 'Invalid email or password'});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async (demoEmail: string, demoPassword: string) => {
+    setLoading(true);
+    try {
+      await login(demoEmail, demoPassword);
+    } catch (err: any) {
+      setErrors({password: 'Demo login failed. Please try again.'});
     } finally {
       setLoading(false);
     }
@@ -120,6 +132,30 @@ const LoginScreen = ({navigation}: any) => {
             variant="outline"
             size="large"
           />
+
+          {/* Demo Accounts */}
+          <View style={styles.demoSection}>
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>DEMO ACCOUNTS</Text>
+              <View style={styles.dividerLine} />
+            </View>
+            <Text style={styles.demoHint}>Tap any to sign in instantly (no backend needed)</Text>
+            {[
+              {label: '🎬 Demo User', email: 'demo@cinebooks.com', pass: 'Demo@1234'},
+              {label: '👤 Lingesh', email: 'lingesh@cinebooks.com', pass: 'Test@1234'},
+              {label: '🔑 Admin', email: 'admin@cinebooks.com', pass: 'Admin@1234'},
+            ].map(acc => (
+              <TouchableOpacity
+                key={acc.email}
+                style={styles.demoChip}
+                onPress={() => handleDemoLogin(acc.email, acc.pass)}
+                disabled={loading}>
+                <Text style={styles.demoChipLabel}>{acc.label}</Text>
+                <Text style={styles.demoChipEmail}>{acc.email}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -192,6 +228,37 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textMuted,
     marginHorizontal: Spacing.md,
+  },
+  demoSection: {
+    marginTop: Spacing.lg,
+  },
+  demoHint: {
+    ...Typography.small,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+    marginTop: -Spacing.sm,
+  },
+  demoChip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: Colors.backgroundInput,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  demoChipLabel: {
+    ...Typography.body,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+  },
+  demoChipEmail: {
+    ...Typography.caption,
+    color: Colors.textMuted,
   },
 });
 
