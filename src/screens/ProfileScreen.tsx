@@ -39,7 +39,7 @@ const ProfileScreen = ({navigation}: any) => {
     {icon: 'person-circle', label: 'Edit Profile', screen: 'ProfileEdit', color: Colors.primary},
     {icon: 'settings', label: 'Preferences', screen: 'Preferences', color: Colors.accent},
     {icon: 'heart', label: 'Wishlist', screen: 'Wishlist', color: Colors.error},
-    {icon: 'receipt', label: 'Booking History', screen: 'OrdersTab', color: Colors.success},
+    {icon: 'receipt', label: 'Booking History', screen: 'BookingsTab', color: Colors.success},
     {icon: 'chatbubble', label: 'Feedback', screen: 'Feedback', color: Colors.info},
     {icon: 'help-circle', label: 'Help & Support', screen: 'Help', color: '#9C27B0'},
     {icon: 'cog', label: 'Settings', screen: 'Settings', color: Colors.textMuted},

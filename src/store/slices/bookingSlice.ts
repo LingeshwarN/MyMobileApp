@@ -1,14 +1,23 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {BookingItem} from '../../context/BookingContext';
 
+export interface CartItem {
+  movieId?: string;
+  showtimeId: string | null;
+  selectedLabels: string[];
+  paymentMode: string;
+}
+
 interface BookingState {
   bookings: BookingItem[];
   activeCount: number;
+  cart: CartItem | null;
 }
 
 const initialState: BookingState = {
   bookings: [],
   activeCount: 0,
+  cart: null,
 };
 
 export const bookingSlice = createSlice({
@@ -30,8 +39,11 @@ export const bookingSlice = createSlice({
       state.bookings = action.payload;
       state.activeCount = state.bookings.filter(b => b.status === 'confirmed').length;
     },
+    updateCart: (state, action: PayloadAction<CartItem | null>) => {
+      state.cart = action.payload;
+    },
   },
 });
 
-export const {addBooking, cancelBooking, setBookings} = bookingSlice.actions;
+export const {addBooking, cancelBooking, setBookings, updateCart} = bookingSlice.actions;
 export default bookingSlice.reducer;

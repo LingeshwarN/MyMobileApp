@@ -9,12 +9,14 @@ import {
   StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {DrawerActions} from '@react-navigation/native';
 import {Colors, Typography, Spacing, BorderRadius, Shadow} from '../theme';
 import {Movie} from '../data/movies';
 import {UserContext} from '../context/UserContext';
 import Button from '../components/Button';
-import {useDispatch} from 'react-redux';
-import {addBooking} from '../store/slices/bookingSlice';
+import {useDispatch, useSelector} from 'react-redux';
+import {addBooking, updateCart} from '../store/slices/bookingSlice';
+import {RootState} from '../store/store';
 import {BookingItem} from '../context/BookingContext';
 import {
   Showtime,
@@ -29,6 +31,7 @@ import {
 import {useCachedFetch} from '../hooks/useCachedFetch';
 import {useSocket} from '../hooks/useSocket';
 import SwapProposalModal from '../components/SwapProposalModal';
+import OrdersScreen from './OrdersScreen';
 
 // 10-row × 12-col static theater layout (col 5 & 6 are aisle gaps)
 const STATIC_ROWS = 10;
@@ -96,10 +99,12 @@ const TAGGED_STATIC_SEATS = buildTaggedStaticSeats();
 const BookingsScreen = ({route, navigation}: any) => {
   const movie: Movie | undefined = route.params?.movie;
   const dispatch = useDispatch();
+  const cart = useSelector((state: RootState) => state.booking.cart);
+  const isSameMovie = cart?.movieId === movie?.id;
   const {user} = useContext(UserContext);
-  const [selectedShowtimeId, setSelectedShowtimeId] = useState<string | null>(null);
-  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
-  const [paymentMode, setPaymentMode] = useState<string>('');
+  const [selectedShowtimeId, setSelectedShowtimeId] = useState<string | null>(isSameMovie && cart ? cart.showtimeId : null);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>(isSameMovie && cart ? cart.selectedLabels : []);
+  const [paymentMode, setPaymentMode] = useState<string>(isSameMovie && cart ? cart.paymentMode : '');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [bookingLoading, setBookingLoading] = useState(false);
   const [swapTargetSeat, setSwapTargetSeat] = useState<string | null>(null);
@@ -117,11 +122,22 @@ const BookingsScreen = ({route, navigation}: any) => {
 
   // Auto-select first showtime when live data arrives
   useEffect(() => {
-    if (allShowtimes.length > 0 && !selectedShowtimeId) {
+    if (allShowtimes.length > 0 && !selectedShowtimeId && !isSameMovie) {
       setSelectedShowtimeId(allShowtimes[0]._id);
       setSelectedLabels([]);
     }
-  }, [allShowtimes, selectedShowtimeId]);
+  }, [allShowtimes, selectedShowtimeId, isSameMovie]);
+
+  // Sync cart to redux
+  useEffect(() => {
+    if (!movie) return;
+    dispatch(updateCart({
+      movieId: movie.id,
+      showtimeId: selectedShowtimeId,
+      selectedLabels,
+      paymentMode,
+    }));
+  }, [movie, selectedShowtimeId, selectedLabels, paymentMode, dispatch]);
 
   // Real-time seat-swap alerts (incoming proposals arrive on the user's own socket)
   const handleSwapEvent = useCallback(
@@ -161,13 +177,7 @@ const BookingsScreen = ({route, navigation}: any) => {
   useSocket(selectedShowtimeId, handleSwapEvent, user?.id);
 
   if (!movie) {
-    return (
-      <View style={[styles.container, styles.centered]}>
-        <Icon name="ticket-outline" size={64} color={Colors.textMuted} />
-        <Text style={styles.emptyText}>No movie selected</Text>
-        <Text style={styles.emptySubtext}>Browse movies and tap "Book Now"</Text>
-      </View>
-    );
+    return <OrdersScreen navigation={navigation} route={route} />;
   }
 
   const useRealSeats = !!selectedShowtime;
@@ -255,12 +265,13 @@ const BookingsScreen = ({route, navigation}: any) => {
           seatLabels: selectedLabels,
           paymentMode,
         });
+        dispatch(updateCart(null));
         Alert.alert(
           'Booking Confirmed!',
           `${movie.name}\nSeats: ${selectedLabels.join(', ')}\nTotal: ₹${total}`,
           [{text: 'View Orders', onPress: () => {
             const tabNav = navigation.getParent();
-            if (tabNav) tabNav.navigate('OrdersTab');
+            if (tabNav) tabNav.navigate('BookingsTab');
             else navigation.goBack();
           }}],
         );
@@ -280,12 +291,13 @@ const BookingsScreen = ({route, navigation}: any) => {
           bookedAt: new Date().toISOString(),
         };
         dispatch(addBooking(booking));
+        dispatch(updateCart(null));
         Alert.alert(
           'Booking Confirmed!',
           `${movie.name}\nSeats: ${selectedLabels.join(', ')}\nTotal: ₹${total}`,
           [{text: 'View Orders', onPress: () => {
             const tabNav = navigation.getParent();
-            if (tabNav) tabNav.navigate('OrdersTab');
+            if (tabNav) tabNav.navigate('BookingsTab');
             else navigation.goBack();
           }}],
         );

@@ -17,7 +17,11 @@ export async function loadPersistedState(): Promise<{
       AsyncStorage.getItem(BOOKINGS_KEY),
       AsyncStorage.getItem(WISHLIST_KEY),
     ]);
-    const booking = b ? {bookings: JSON.parse(b).bookings ?? []} : undefined;
+    const parsedBooking = b ? JSON.parse(b) : null;
+    const booking = parsedBooking ? {
+      bookings: parsedBooking.bookings ?? [],
+      cart: parsedBooking.cart ?? null,
+    } : undefined;
     const wishlist = w ? {items: JSON.parse(w).items ?? []} : undefined;
     return {booking, wishlist};
   } catch (e) {

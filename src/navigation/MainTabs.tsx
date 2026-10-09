@@ -78,7 +78,10 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Orders',
           tabBarIcon: ({color, size}) => (
-            <Icon name="receipt" size={size} color={color} />
+            <View style={styles.iconContainer}>
+              <Icon name="receipt" size={size} color={color} />
+              <Badge count={activeBookingsCount} />
+            </View>
           ),
         }}
       />

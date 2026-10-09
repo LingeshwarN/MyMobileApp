@@ -155,7 +155,7 @@ const OrdersScreen = ({navigation}: any) => {
           <Icon name="ellipsis-vertical" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={{flex: 1}}>
-          <Text style={styles.title}>📋 My Orders</Text>
+          <Text style={styles.title}>🎫 My Bookings</Text>
           <Text style={styles.subtitle}>
             {syncing ? 'Syncing with server…' : `${bookings.length} booking(s)`}
           </Text>
