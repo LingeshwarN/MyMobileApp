@@ -28,7 +28,22 @@ const WishlistScreen = ({navigation}: any) => {
           <Text style={styles.rating}>{item.rating}</Text>
         </View>
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.bookBtn} onPress={() => navigation.navigate('MovieDetail', {movie: item})}>
+          <TouchableOpacity
+            style={styles.bookBtn}
+            onPress={() => {
+              const parent = navigation.getParent();
+              if (parent) {
+                (parent as any).navigate('MainDashboard', {
+                  screen: 'HomeTab',
+                  params: {
+                    screen: 'MovieDetail',
+                    params: {movie: item},
+                  },
+                });
+              } else {
+                navigation.navigate('MovieDetail', {movie: item});
+              }
+            }}>
             <Text style={styles.bookBtnText}>View Details</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handleRemove(item)}>

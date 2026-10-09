@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {StatusBar} from 'react-native';
+import {StatusBar, LogBox} from 'react-native';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {Provider as ReduxProvider} from 'react-redux';
 import {store} from './src/store/store';
@@ -10,6 +10,8 @@ import AppNavigator from './src/navigation/AppNavigator';
 import {Colors} from './src/theme';
 import {setBookings, updateCart} from './src/store/slices/bookingSlice';
 import {setWishlist} from './src/store/slices/wishlistSlice';
+
+LogBox.ignoreLogs(['[Reanimated] dependencies should only be used in web implementation.']);
 
 startPersisting(store);
 

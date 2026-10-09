@@ -35,16 +35,20 @@ const MovieExplorerScreen = ({navigation}: any) => {
     let result = allMovies;
     if (searchText.trim()) {
       const query = searchText.toLowerCase();
-      result = result.filter(
-        m =>
+      result = result.filter(m => {
+        const movieGenres = Array.isArray(m.genre) ? m.genre : [];
+        return (
           m.name.toLowerCase().includes(query) ||
-          m.genre.some(g => g.toLowerCase().includes(query)),
-      );
+          movieGenres.some(g => typeof g === 'string' && g.toLowerCase().includes(query))
+        );
+      });
     }
     if (selectedGenre) {
-      result = result.filter(m =>
-        m.genre.some(g => g.toLowerCase() === selectedGenre.toLowerCase()),
-      );
+      const target = selectedGenre.toLowerCase();
+      result = result.filter(m => {
+        const movieGenres = Array.isArray(m.genre) ? m.genre : [];
+        return movieGenres.some(g => typeof g === 'string' && g.toLowerCase() === target);
+      });
     }
     setFilteredMovies(result);
   }, [searchText, selectedGenre, allMovies]);
@@ -64,7 +68,7 @@ const MovieExplorerScreen = ({navigation}: any) => {
           <Text style={styles.ratingText}>{item.rating}</Text>
         </View>
         <View style={styles.genreRow}>
-          {item.genre.slice(0, 2).map((g, i) => (
+          {(Array.isArray(item.genre) ? item.genre : []).slice(0, 2).map((g, i) => (
             <View key={i} style={styles.genreTag}>
               <Text style={styles.genreTagText}>{g}</Text>
             </View>

@@ -5,8 +5,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux';
 import {Colors, Typography, Shadow} from '../theme';
 import HomeStack from './HomeStack';
-import MovieExplorerScreen from '../screens/MovieExplorerScreen';
-import BookingsScreen from '../screens/BookingsScreen';
+import GenresStack from './GenresStack';
 import OrdersScreen from '../screens/OrdersScreen';
 import ProfileStack from './ProfileStack';
 import Badge from '../components/Badge';
@@ -51,7 +50,7 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="GenresTab"
-        component={MovieExplorerScreen}
+        component={GenresStack}
         options={{
           tabBarLabel: 'Genres',
           tabBarIcon: ({color, size}) => (
@@ -61,25 +60,12 @@ const MainTabs = () => {
       />
       <Tab.Screen
         name="BookingsTab"
-        component={BookingsScreen}
+        component={OrdersScreen}
         options={{
           tabBarLabel: 'Bookings',
           tabBarIcon: ({color, size}) => (
             <View style={styles.iconContainer}>
               <Icon name="ticket" size={size} color={color} />
-              <Badge count={activeBookingsCount} />
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="OrdersTab"
-        component={OrdersScreen}
-        options={{
-          tabBarLabel: 'Orders',
-          tabBarIcon: ({color, size}) => (
-            <View style={styles.iconContainer}>
-              <Icon name="receipt" size={size} color={color} />
               <Badge count={activeBookingsCount} />
             </View>
           ),

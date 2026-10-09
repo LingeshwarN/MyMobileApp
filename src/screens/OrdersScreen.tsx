@@ -51,8 +51,12 @@ const OrdersScreen = ({navigation}: any) => {
       fetchBookings()
         .then(list => {
           if (!active) return;
-          const items = list.map(apiBookingToItem);
-          dispatch(setBookings(items));
+          if (Array.isArray(list) && list.length > 0) {
+            const serverItems = list.map(apiBookingToItem);
+            const serverIds = new Set(serverItems.map(s => s.id));
+            const localOnly = bookings.filter(b => !serverIds.has(b.id));
+            dispatch(setBookings([...serverItems, ...localOnly]));
+          }
         })
         .catch(() => {
           // offline / not logged in: keep local bookings untouched
@@ -63,7 +67,7 @@ const OrdersScreen = ({navigation}: any) => {
       return () => {
         active = false;
       };
-    }, [dispatch]),
+    }, [dispatch, bookings]),
   );
 
   const handleCancel = (bookingId: string) => {

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   StatusBar,
+  ToastAndroid,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {DrawerActions} from '@react-navigation/native';
@@ -31,7 +32,7 @@ import {
 import {useCachedFetch} from '../hooks/useCachedFetch';
 import {useSocket} from '../hooks/useSocket';
 import SwapProposalModal from '../components/SwapProposalModal';
-import OrdersScreen from './OrdersScreen';
+
 
 // 10-row × 12-col static theater layout (col 5 & 6 are aisle gaps)
 const STATIC_ROWS = 10;
@@ -177,7 +178,16 @@ const BookingsScreen = ({route, navigation}: any) => {
   useSocket(selectedShowtimeId, handleSwapEvent, user?.id);
 
   if (!movie) {
-    return <OrdersScreen navigation={navigation} route={route} />;
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <StatusBar barStyle="light-content" />
+        <Icon name="ticket-outline" size={64} color={Colors.textMuted} />
+        <Text style={styles.emptyText}>No movie selected</Text>
+        <Text style={[styles.emptySubtext, {textAlign: 'center', paddingHorizontal: Spacing.xl}]}>
+          Go to Home, pick a movie and tap "Book Now".
+        </Text>
+      </View>
+    );
   }
 
   const useRealSeats = !!selectedShowtime;
@@ -258,19 +268,37 @@ const BookingsScreen = ({route, navigation}: any) => {
   const handleBooking = async () => {
     if (!validate()) return;
     setBookingLoading(true);
+    console.log(`🎟 [BookingsScreen] Booking started — Movie: ${movie.name}, Seats: ${selectedLabels.join(', ')}, Payment: ${paymentMode}, Total: ₹${total}`);
     try {
       if (useRealSeats && selectedShowtimeId) {
-        await createBooking({
+        console.log(`📡 [BookingsScreen] Calling backend createBooking API — showtimeId: ${selectedShowtimeId}`);
+        const apiRes = await createBooking({
           showtimeId: selectedShowtimeId,
           seatLabels: selectedLabels,
           paymentMode,
         });
+        console.log('✅ [BookingsScreen] Backend booking SUCCESS', apiRes);
+        const booking: BookingItem = {
+          id: (apiRes as any)?._id || 'BK' + Date.now(),
+          movie: movie,
+          showtime: selectedShowtime ? formatShowtime(selectedShowtime.startTime) : (movie.showtimes[0] || '10:00 AM'),
+          seats: selectedLabels,
+          quantity: selectedLabels.length,
+          subtotal,
+          convenienceFee,
+          total,
+          paymentMode,
+          status: 'confirmed',
+          bookedAt: new Date().toISOString(),
+        };
+        dispatch(addBooking(booking));
+        ToastAndroid.show('🎟 Ticket Booked Successfully!', ToastAndroid.SHORT);
         dispatch(updateCart(null));
         Alert.alert(
-          'Booking Confirmed!',
+          'Booking Confirmed! 🎉',
           `${movie.name}\nSeats: ${selectedLabels.join(', ')}\nTotal: ₹${total}`,
-          [{text: 'View Orders', onPress: () => {
-            const tabNav = navigation.getParent();
+          [{text: 'View Bookings', onPress: () => {
+            const tabNav = navigation.getParent()?.getParent?.() ?? navigation.getParent();
             if (tabNav) tabNav.navigate('BookingsTab');
             else navigation.goBack();
           }}],
@@ -290,19 +318,21 @@ const BookingsScreen = ({route, navigation}: any) => {
           status: 'confirmed',
           bookedAt: new Date().toISOString(),
         };
+        console.log('📦 [BookingsScreen] Offline booking saved to Redux:', booking.id);
         dispatch(addBooking(booking));
         dispatch(updateCart(null));
         Alert.alert(
-          'Booking Confirmed!',
+          'Booking Confirmed! 🎉',
           `${movie.name}\nSeats: ${selectedLabels.join(', ')}\nTotal: ₹${total}`,
-          [{text: 'View Orders', onPress: () => {
-            const tabNav = navigation.getParent();
+          [{text: 'View Bookings', onPress: () => {
+            const tabNav = navigation.getParent()?.getParent?.() ?? navigation.getParent();
             if (tabNav) tabNav.navigate('BookingsTab');
             else navigation.goBack();
           }}],
         );
       }
     } catch (err: any) {
+      console.error('❌ [BookingsScreen] Booking FAILED:', err?.message);
       Alert.alert('Booking Failed', err?.message || 'Please try again');
     } finally {
       setBookingLoading(false);

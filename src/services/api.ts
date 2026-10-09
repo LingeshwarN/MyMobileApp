@@ -52,7 +52,11 @@ export function normalizeMovie(doc: any): Movie {
     name: doc.name || 'Unknown Movie',
     poster: doc.poster || 'https://picsum.photos/seed/movie/300/450',
     rating: typeof doc.rating === 'number' ? doc.rating : 4.0,
-    genre: Array.isArray(doc.genre) ? doc.genre : [],
+    genre: Array.isArray(doc.genre)
+      ? doc.genre
+      : typeof doc.genre === 'string' && doc.genre.trim().length > 0
+      ? doc.genre.split(',').map((g: string) => g.trim())
+      : ['Action'],
     synopsis: doc.synopsis || '',
     releaseDate: doc.releaseDate || '',
     language: doc.language || 'English',

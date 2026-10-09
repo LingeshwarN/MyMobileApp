@@ -25,10 +25,12 @@ export const bookingSlice = createSlice({
   initialState,
   reducers: {
     addBooking: (state, action: PayloadAction<BookingItem>) => {
+      console.log('📌 [Redux bookingSlice] addBooking:', action.payload.movie.name, action.payload.seats);
       state.bookings.unshift(action.payload);
       state.activeCount = state.bookings.filter(b => b.status === 'confirmed').length;
     },
     cancelBooking: (state, action: PayloadAction<string>) => {
+      console.log('📌 [Redux bookingSlice] cancelBooking ID:', action.payload);
       const booking = state.bookings.find(b => b.id === action.payload);
       if (booking) {
         booking.status = 'cancelled';
@@ -36,10 +38,12 @@ export const bookingSlice = createSlice({
       state.activeCount = state.bookings.filter(b => b.status === 'confirmed').length;
     },
     setBookings: (state, action: PayloadAction<BookingItem[]>) => {
+      console.log('📌 [Redux bookingSlice] setBookings count:', action.payload.length);
       state.bookings = action.payload;
       state.activeCount = state.bookings.filter(b => b.status === 'confirmed').length;
     },
     updateCart: (state, action: PayloadAction<CartItem | null>) => {
+      console.log('📌 [Redux bookingSlice] updateCart:', action.payload);
       state.cart = action.payload;
     },
   },
